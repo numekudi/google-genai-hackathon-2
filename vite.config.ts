@@ -5,4 +5,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  define: {
+    "import.meta.env.FIREBASE_WEBAPP_CONFIG": JSON.stringify(
+      process.env.FIREBASE_WEBAPP_CONFIG
+    ),
+  },
 });
