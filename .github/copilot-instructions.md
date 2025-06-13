@@ -1,5 +1,7 @@
 以下のReact Router v7のドキュメントを理解して開発してください。
 
+viteが調子悪いときはr+Enterでサーバーを再起動するといいかも。
+
 ---
 
 # React Router v7
