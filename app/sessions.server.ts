@@ -17,6 +17,7 @@ const { getSession, commitSession, destroySession } =
       path: "/",
       sameSite: "lax",
       secure: true,
+      secrets: [process.env.COOKIE_SECRET!],
     },
   });
 

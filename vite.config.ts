@@ -3,11 +3,13 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
-  define: {
-    "import.meta.env.FIREBASE_WEBAPP_CONFIG": JSON.stringify(
-      process.env.FIREBASE_WEBAPP_CONFIG
-    ),
-  },
+export default defineConfig(({ mode }) => {
+  return {
+    plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+    define: {
+      "import.meta.env.FIREBASE_WEBAPP_CONFIG": JSON.stringify(
+        process.env.FIREBASE_WEBAPP_CONFIG
+      ),
+    },
+  };
 });

@@ -3,7 +3,7 @@ import { getSession } from "~/sessions.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const session = await getSession(request.headers.get("Cookie"));
-  console.log("token", session.get("idToken"));
+  const idToken = session.get("idToken");
 };
 
 const Home = () => {
