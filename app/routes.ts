@@ -13,5 +13,8 @@ export default [
     route("simulation", "routes/simulation.tsx"),
     route("settings", "routes/settings.tsx"),
   ]),
-  ...prefix("api", [route("sessions", "routes/api/sessions.tsx")]),
+  ...prefix("api", [
+    route("sessions", "routes/api/sessions.tsx"),
+    route("posts", "routes/api/posts.tsx"),
+  ]),
 ] satisfies RouteConfig;

@@ -1,110 +1,79 @@
-import * as React from "react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { Form, redirect, useFetcher, useLoaderData } from "react-router";
-
-import { adminAuth } from "~/lib/firebaseAdmin.server";
-import { getEmbedding } from "../lib/vertexai/lib";
-import {
-  createPost,
-  deletePost,
-  getPosts,
-  getPostsByTimeRange,
-} from "../repositories/posts";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Form, useFetcher } from "react-router";
 import type { PostWithMetadata } from "../repositories/schema";
-import { getSession } from "../sessions.server";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const session = await getSession(request.headers.get("Cookie"));
-  const idToken = session.get("idToken");
-  const user = await adminAuth.verifyIdToken(idToken as string);
-  if (!user) return redirect("/");
-  const userId = user.uid;
-  const url = new URL(request.url);
-  const before = url.searchParams.get("before");
-  let posts: PostWithMetadata[];
-  if (before) {
-    posts = await getPostsByTimeRange(userId, new Date(Number(before)), 10);
-  } else {
-    posts = await getPosts(userId, 10, 0);
-  }
-  return { posts };
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const session = await getSession(request.headers.get("Cookie"));
-  const idToken = session.get("idToken");
-  const user = await adminAuth.verifyIdToken(idToken as string);
-  if (!user) return redirect("/");
-  const userId = user.uid;
-  const formData = await request.formData();
-  const _action = formData.get("_action");
-  if (_action === "create") {
-    const content = formData.get("content");
-    if (typeof content === "string" && content.trim()) {
-      // Post型に合わせてtype: "note"を付与
-      let contentEmbeddings: number[] | undefined = undefined;
-      try {
-        contentEmbeddings = await getEmbedding(content);
-      } catch (e) {
-        console.error("embedding生成失敗", e);
-      }
-      console.log(content);
-      await createPost({ content, type: "note", contentEmbeddings }, userId);
-    }
-    return redirect("/home");
-  } else if (_action === "delete") {
-    const postId = formData.get("postId");
-    if (typeof postId === "string") {
-      await deletePost(userId, postId);
-    }
-    return redirect("/home");
-  }
-  return null;
-};
-
-const Home = () => {
-  const { posts } = useLoaderData() as {
-    posts: PostWithMetadata[];
-  };
+const Posts = () => {
   const fetcher = useFetcher();
-  const [list, setList] = React.useState(posts);
-  const [loading, setLoading] = React.useState(false);
-  const listRef = React.useRef<HTMLDivElement>(null);
+  const [list, setList] = useState<PostWithMetadata[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // 無限スクロール
-  React.useEffect(() => {
-    setList(posts);
-  }, [posts]);
+  // 初回ロード
+  useEffect(() => {
+    fetcher.load("/api/posts");
+  }, []);
 
-  React.useEffect(() => {
-    if (!listRef.current) return;
-    const el = listRef.current;
-    const onScroll = () => {
-      if (
-        el.scrollTop + el.clientHeight >= el.scrollHeight - 10 &&
-        !loading &&
-        list.length > 0
-      ) {
-        setLoading(true);
-        const last = list[list.length - 1];
-        fetcher.load(`/home?before=${last.timestamp}`);
-      }
-    };
-    el.addEventListener("scroll", onScroll);
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [list, loading, fetcher]);
-
-  React.useEffect(() => {
+  // 投稿取得時のリスト更新
+  useEffect(() => {
     if (fetcher.data?.posts) {
+      // 追加分が0件ならhasMoreをfalseに
+      if (fetcher.data.posts.length === 0) setHasMore(false);
       setList((prev) => [...prev, ...fetcher.data.posts]);
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [fetcher.data]);
+
+  // 無限スクロール: IntersectionObserver
+  const handleIntersection = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (
+        entries[0].isIntersecting &&
+        hasMore &&
+        !isLoading &&
+        list.length > 0
+      ) {
+        setIsLoading(true);
+        const last = list[list.length - 1];
+        fetcher.load(`/api/posts?before=${last.timestamp}`);
+      }
+    },
+    [hasMore, isLoading, list, fetcher]
+  );
+
+  useEffect(() => {
+    const observer = new window.IntersectionObserver(handleIntersection, {
+      threshold: 0.1,
+    });
+    const currentRef = loadMoreRef.current;
+    if (currentRef) observer.observe(currentRef);
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, [handleIntersection]);
+
+  // 投稿作成後のリストリセット
+  useEffect(() => {
+    if (fetcher.data?.created) {
+      setList([]);
+      setHasMore(true);
+      fetcher.load("/api/posts");
+    }
+  }, [fetcher.data]);
+
+  // 投稿削除
+  const handleDelete = (id: string) => {
+    setList((prev) => prev.filter((p) => p.id !== id));
+  };
 
   return (
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <h2>ホーム</h2>
-      <Form method="post" style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <Form
+        method="post"
+        style={{ display: "flex", gap: 8, marginBottom: 16 }}
+        action="/api/posts"
+      >
         <input
           name="content"
           placeholder="新しい投稿..."
@@ -116,14 +85,19 @@ const Home = () => {
         </button>
       </Form>
       <div
-        ref={listRef}
         style={{
-          height: 400,
-          overflow: "auto",
+          minHeight: 400,
           border: "1px solid #ccc",
           borderRadius: 8,
+          paddingBottom: 16,
         }}
       >
+        {list.length === 0 && !hasMore && (
+          <div style={{ textAlign: "center", color: "#888", padding: 32 }}>
+            <span style={{ fontSize: 32, display: "block" }}>📝</span>
+            <span style={{ fontSize: 16 }}>まだ投稿がありません</span>
+          </div>
+        )}
         {list.map((post) => (
           <div
             key={post.id}
@@ -141,7 +115,11 @@ const Home = () => {
                 {new Date(post.createdAt).toLocaleString()}
               </div>
             </div>
-            <Form method="post">
+            <Form
+              method="post"
+              action="/posts"
+              onSubmit={() => handleDelete(post.id)}
+            >
               <input type="hidden" name="postId" value={post.id} />
               <button
                 type="submit"
@@ -154,12 +132,15 @@ const Home = () => {
             </Form>
           </div>
         ))}
-        {loading && (
-          <div style={{ textAlign: "center", padding: 8 }}>読み込み中...</div>
+        <div ref={loadMoreRef} style={{ height: 32 }} />
+        {isLoading && (
+          <div style={{ textAlign: "center", padding: 8 }}>
+            <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-400"></span>
+          </div>
         )}
       </div>
     </div>
   );
 };
 
-export default Home;
+export default Posts;
