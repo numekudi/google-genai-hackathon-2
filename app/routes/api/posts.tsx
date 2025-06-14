@@ -29,9 +29,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!idToken) return redirect("/");
   const user = await adminAuth.verifyIdToken(idToken as string);
   const userId = user.uid; // Use the verified user ID from Firebase
-  const formData = await request.formData();
-  const _action = formData.get("_action");
-  if (_action === "create") {
+
+  if (request.method === "POST") {
+    console.log("POSTリクエストを受信");
+    const formData = await request.formData();
     const content = formData.get("content");
     if (typeof content === "string" && content.trim()) {
       let contentEmbeddings: number[] | undefined = undefined;
@@ -40,15 +41,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       } catch (e) {
         console.error("embedding生成失敗", e);
       }
-      await createPost({ content, type: "note", contentEmbeddings }, userId);
+      const created = await createPost(
+        { content, type: "note", contentEmbeddings },
+        userId
+      );
+      console.log("created post", created);
+      return { created };
     }
-    return redirect("/posts");
-  } else if (_action === "delete") {
+  } else if (request.method === "DELETE") {
+    const formData = await request.formData();
     const postId = formData.get("postId");
     if (typeof postId === "string") {
       await deletePost(userId, postId);
+      return { deleted: true };
     }
-    return redirect("/posts");
   }
   return null;
 };

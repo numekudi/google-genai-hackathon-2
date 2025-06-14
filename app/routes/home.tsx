@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Form, useFetcher } from "react-router";
+import { useFetcher } from "react-router";
 import type { PostWithMetadata } from "../repositories/schema";
+import type { loader } from "./api/posts";
 
 const Posts = () => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof loader>();
+  console.log(fetcher.data);
+  console.log(fetcher.state);
   const [list, setList] = useState<PostWithMetadata[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,10 +19,12 @@ const Posts = () => {
 
   // 投稿取得時のリスト更新
   useEffect(() => {
-    if (fetcher.data?.posts) {
+    if (fetcher.data) {
       // 追加分が0件ならhasMoreをfalseに
-      if (fetcher.data.posts.length === 0) setHasMore(false);
-      setList((prev) => [...prev, ...fetcher.data.posts]);
+      if (fetcher.data.posts.length === 0) {
+        setHasMore(false);
+      }
+      setList((prev) => [...prev, ...fetcher.data!.posts]);
       setIsLoading(false);
     }
   }, [fetcher.data]);
@@ -51,15 +56,6 @@ const Posts = () => {
     };
   }, [handleIntersection]);
 
-  // 投稿作成後のリストリセット
-  useEffect(() => {
-    if (fetcher.data?.created) {
-      setList([]);
-      setHasMore(true);
-      fetcher.load("/api/posts");
-    }
-  }, [fetcher.data]);
-
   // 投稿削除
   const handleDelete = (id: string) => {
     setList((prev) => prev.filter((p) => p.id !== id));
@@ -68,8 +64,8 @@ const Posts = () => {
   return (
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <h2>ホーム</h2>
-      <Form
-        method="post"
+      <fetcher.Form
+        method="POST"
         style={{ display: "flex", gap: 8, marginBottom: 16 }}
         action="/api/posts"
       >
@@ -79,10 +75,8 @@ const Posts = () => {
           required
           style={{ flex: 1 }}
         />
-        <button type="submit" name="_action" value="create">
-          投稿
-        </button>
-      </Form>
+        <button type="submit">投稿</button>
+      </fetcher.Form>
       <div
         style={{
           minHeight: 400,
@@ -114,21 +108,16 @@ const Posts = () => {
                 {new Date(post.createdAt).toLocaleString()}
               </div>
             </div>
-            <Form
-              method="post"
-              action="/posts"
+            <fetcher.Form
+              method="DELETE"
+              action="/api/posts"
               onSubmit={() => handleDelete(post.id)}
             >
               <input type="hidden" name="postId" value={post.id} />
-              <button
-                type="submit"
-                name="_action"
-                value="delete"
-                style={{ color: "red" }}
-              >
+              <button type="submit" style={{ color: "red" }}>
                 削除
               </button>
-            </Form>
+            </fetcher.Form>
           </div>
         ))}
         <div ref={loadMoreRef} style={{ height: 32 }} />
