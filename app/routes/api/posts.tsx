@@ -2,12 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getEmbedding } from "../../lib/vertexai/lib";
-import {
-  createPost,
-  deletePost,
-  getPosts,
-  getPostsByTimeRange,
-} from "../../repositories/posts";
+import { createPost, deletePost, getPosts } from "../../repositories/posts";
 import type { PostWithMetadata } from "../../repositories/schema";
 import { getSession } from "../../sessions.server";
 
@@ -18,12 +13,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await adminAuth.verifyIdToken(idToken as string);
   const userId = user.uid; // Use the verified user ID from Firebase
   const url = new URL(request.url);
-  const before = url.searchParams.get("before");
+  const offset = url.searchParams.get("offset");
   let posts: PostWithMetadata[];
-  if (before) {
-    posts = await getPostsByTimeRange(userId, new Date(Number(before)), 10);
+  if (offset) {
+    posts = await getPosts(userId, 10, Number(offset));
   } else {
-    console.log(userId);
     posts = await getPosts(userId, 10, 0);
   }
   return { posts };

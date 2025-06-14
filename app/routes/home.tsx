@@ -34,8 +34,7 @@ const Posts = () => {
         list.length > 0
       ) {
         setIsLoading(true);
-        const last = list[list.length - 1];
-        fetcher.load(`/api/posts?before=${last.timestamp}`);
+        fetcher.load(`/api/posts?offset=${list.length}`);
       }
     },
     [hasMore, isLoading, list, fetcher]
