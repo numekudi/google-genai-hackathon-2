@@ -24,7 +24,6 @@ const Home = () => {
   // 投稿追加
   const handleAddPost = (post: PostWithMetadata) => {
     setList((prev) => [post, ...prev]);
-    setHasMore(true);
   };
 
   // 投稿削除

@@ -1,10 +1,18 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  ShouldRevalidateFunctionArgs,
+} from "react-router";
 import { redirect } from "react-router";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getEmbedding } from "../../lib/vertexai/lib";
 import { createPost, deletePost, getPosts } from "../../repositories/posts";
 import type { PostWithMetadata } from "../../repositories/schema";
 import { getSession } from "../../sessions.server";
+
+export function shouldRevalidate({}: ShouldRevalidateFunctionArgs) {
+  return false;
+}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const session = await getSession(request.headers.get("Cookie"));
@@ -56,5 +64,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return { deleted: true };
     }
   }
+
   return null;
 };

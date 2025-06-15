@@ -1,4 +1,4 @@
-import { redirect } from "react-router";
+import { data } from "react-router";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { commitSession, getSession } from "~/sessions.server";
 import type { Route } from "./+types/sessions";
@@ -18,9 +18,12 @@ export async function action({ request }: Route.ActionArgs) {
 
   session.set("idToken", idToken);
 
-  return redirect("/home", {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return data(
+    { user },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
 }

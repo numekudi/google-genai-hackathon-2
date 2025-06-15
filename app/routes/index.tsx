@@ -5,7 +5,7 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 import Markdown from "react-markdown";
-import { useFetcher } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { auth } from "../lib/firebase.client";
 
@@ -13,6 +13,7 @@ export default function Home() {
   const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const fetcher = useFetcher();
+  const navigator = useNavigate();
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
@@ -26,6 +27,7 @@ export default function Home() {
           action: "/api/sessions",
         }
       );
+      navigator("/home");
     } catch (e) {
     } finally {
       setLoading(false);
@@ -45,6 +47,7 @@ export default function Home() {
           action: "/api/sessions",
         }
       );
+      navigator("/home");
     } catch (e) {
     } finally {
       setLoading(false);

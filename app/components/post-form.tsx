@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import type { action } from "~/routes/api/posts";
 import type { PostWithMetadata } from "../repositories/schema";
@@ -8,39 +8,39 @@ type PostFormProps = {
 };
 
 const PostForm = ({ onAdd }: PostFormProps) => {
-  const formRef = useRef<HTMLFormElement | null>(null);
   const fetcher = useFetcher<typeof action>();
+  const [input, setInput] = useState("");
 
   useEffect(() => {
-    if (fetcher.state === "idle" && formRef.current) {
-      formRef.current.reset();
-    }
     if (fetcher.data) {
       // フォームデータが存在する場合は、投稿を追加
-      const createdPost = fetcher.data.created as PostWithMetadata;
+      const createdPost = fetcher.data.created;
       if (createdPost) {
         onAdd(createdPost);
       }
     }
-  }, [fetcher.state]);
+  }, [fetcher.data]);
+
+  const handleSubmit = () => {
+    fetcher.submit(
+      { content: input },
+      { method: "POST", action: "/api/posts" }
+    );
+    setInput("");
+  };
 
   return (
-    <fetcher.Form
-      ref={formRef}
-      method="post"
-      action="/api/posts"
-      style={{ display: "flex", gap: 8, marginBottom: 16 }}
-    >
+    <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
       <input
-        name="content"
         placeholder="新しい投稿..."
-        required
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
         style={{ flex: 1 }}
       />
-      <button type="submit" disabled={fetcher.state === "submitting"}>
+      <button onClick={handleSubmit} disabled={fetcher.state === "submitting"}>
         {fetcher.state === "submitting" ? "投稿中..." : "投稿"}
       </button>
-    </fetcher.Form>
+    </div>
   );
 };
 
