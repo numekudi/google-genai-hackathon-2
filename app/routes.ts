@@ -13,6 +13,7 @@ export default [
       route("home", "routes/home.tsx"),
       route("simulation", "routes/simulation.tsx"),
       route("settings", "routes/settings.tsx"),
+      route("trends", "routes/trends.tsx"),
     ]),
   ]),
   ...prefix("api", [

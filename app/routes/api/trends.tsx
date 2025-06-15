@@ -339,7 +339,8 @@ ${allPostsString.join("\n")}
 }
 
 export const loader = async ({ request }: { request: Request }) => {
-  const url = new URL(request.url);
+  console.log("Trends loader called");
+
   const session = await getSession(request.headers.get("Cookie"));
   const idToken = session.get("idToken");
   if (!idToken) return redirect("/");
@@ -383,7 +384,23 @@ export const loader = async ({ request }: { request: Request }) => {
         )
       );
       let summary = "";
-      for await (const chunk of generateTrendSummary(posts, trends)) {
+      let consultation = "";
+      const summaryStream = generateTrendSummary(posts, trends);
+      const consultationStream = generateConsultation(uid, posts, trends);
+      // consultationの逐次送信
+      for await (const chunk of consultationStream) {
+        consultation += chunk;
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "consultation",
+              content: chunk,
+            })}\n\n`
+          )
+        );
+      }
+      // summaryの逐次送信
+      for await (const chunk of summaryStream) {
         summary += chunk;
         controller.enqueue(
           encoder.encode(
@@ -392,7 +409,9 @@ export const loader = async ({ request }: { request: Request }) => {
         );
       }
       // DBにupsert
-      await updatePost(uid, post.id, { trend: { trends, summary } });
+      await updatePost(uid, post.id, {
+        trend: { trends, summary, consultation },
+      });
       controller.close();
     },
   });
