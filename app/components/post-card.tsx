@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { FaEyeSlash, FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa6";
-import ConfirmDeleteDialog from "./confirm-delete-dialog";
-// updateVisibilityは仮実装（APIが異なる場合は適宜修正）
 import type { PostWithMetadata } from "../repositories/schema";
-// Button, ConfirmDialogは既存UIに合わせて仮実装または置き換え
+import ConfirmDeleteDialog from "./confirm-delete-dialog";
 
 export default function PostCard({
   post,

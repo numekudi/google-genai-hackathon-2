@@ -1,4 +1,4 @@
-import { FaGear, FaHospitalUser, FaHouse } from "react-icons/fa6";
+import { FaChartLine, FaGear, FaHospitalUser, FaHouse } from "react-icons/fa6";
 import { Link, useLocation } from "react-router";
 
 const MenuLayout = ({ children }: { children: React.ReactNode }) => {
@@ -22,6 +22,17 @@ const MenuLayout = ({ children }: { children: React.ReactNode }) => {
           <span className="text-sm mt-1 font-semibold">ホーム</span>
         </Link>
 
+        <Link
+          to="/trends"
+          className={`flex-1 flex flex-col items-center justify-center py-2 transition hover:bg-indigo-50 dark:hover:bg-gray-800 ${
+            isActive("/trends")
+              ? "bg-indigo-100 dark:bg-gray-800 text-indigo-600 dark:text-indigo-400"
+              : "text-gray-500 dark:text-gray-400"
+          }`}
+        >
+          <FaChartLine size={24} />
+          <span className="text-sm mt-1 font-semibold">トレンド</span>
+        </Link>
         <Link
           to="/simulation"
           className={`flex-1 flex flex-col items-center justify-center py-2 transition hover:bg-indigo-50 dark:hover:bg-gray-800 ${
