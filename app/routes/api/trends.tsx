@@ -1,9 +1,17 @@
 import { FunctionCallingMode, SchemaType } from "@google-cloud/vertexai";
+import { redirect } from "react-router";
+import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { generativeModel, getEmbedding } from "~/lib/vertexai/lib";
-import { findPostBySimilarity } from "~/repositories/posts";
+import {
+  findPostBySimilarity,
+  getPosts,
+  getPostsByTimeRange,
+  updatePost,
+} from "~/repositories/posts";
 import type { PostWithMetadata } from "~/repositories/schema";
+import { getSession } from "~/sessions.server";
 
-async function generateTrendList(posts: PostWithMetadata[]) {
+async function generateTrendList(posts: PostWithMetadata[]): Promise<string[]> {
   const userPosts = posts.reverse().map((p) => {
     const dateString = new Date(p.timestamp).toLocaleString("ja-JP", {
       timeZone: "Asia/Tokyo",
@@ -63,13 +71,13 @@ ${userPosts.join("\n")}
 
   return JSON.parse(
     res.response.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
-  ) as string[];
+  );
 }
 
 async function* generateTrendSummary(
   posts: PostWithMetadata[],
   trends: string[]
-) {
+): AsyncGenerator<string> {
   const today = new Date();
   const todayInstruction = today.toLocaleString("ja-JP", {
     timeZone: "Asia/Tokyo",
@@ -149,7 +157,7 @@ async function* generateConsultation(
   uid: string,
   posts: PostWithMetadata[],
   trends: string[]
-) {
+): AsyncGenerator<string> {
   const today = new Date();
   const todayInstruction = today.toLocaleString("ja-JP", {
     timeZone: "Asia/Tokyo",
@@ -329,3 +337,70 @@ ${allPostsString.join("\n")}
     }
   }
 }
+
+export const loader = async ({ request }: { request: Request }) => {
+  const url = new URL(request.url);
+  const session = await getSession(request.headers.get("Cookie"));
+  const idToken = session.get("idToken");
+  if (!idToken) return redirect("/");
+  const user = await adminAuth.verifyIdToken(idToken as string);
+  const uid = user.uid; // Use the verified user ID from Firebase
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const retrievedPosts = await getPosts(uid, 1, 0);
+      const post = retrievedPosts[0];
+      if (post?.trend && post.trend.trends && post.trend.summary) {
+        // 既存データをSSEで送信
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "trends",
+              trends: post.trend.trends,
+            })}\n\n`
+          )
+        );
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "summary",
+              content: post.trend.summary,
+            })}\n\n`
+          )
+        );
+        controller.close();
+        return;
+      }
+      // 無ければ生成
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const posts = await getPostsByTimeRange(uid, oneMonthAgo);
+      const trends = await generateTrendList(posts);
+      controller.enqueue(
+        encoder.encode(
+          `data: ${JSON.stringify({ type: "trends", trends })}\n\n`
+        )
+      );
+      let summary = "";
+      for await (const chunk of generateTrendSummary(posts, trends)) {
+        summary += chunk;
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({ type: "summary", content: chunk })}\n\n`
+          )
+        );
+      }
+      // DBにupsert
+      await updatePost(uid, post.id, { trend: { trends, summary } });
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+};
