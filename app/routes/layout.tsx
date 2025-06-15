@@ -8,7 +8,7 @@ import {
 import { auth } from "~/lib/firebase.client";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getSession } from "~/sessions.server";
-import Footer from "../components/footer";
+import MenuLayout from "../components/menu-layout";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -43,9 +43,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
-        <Outlet />
+        <MenuLayout>
+          <Outlet />
+        </MenuLayout>
       </main>
-      <Footer />
     </div>
   );
 }

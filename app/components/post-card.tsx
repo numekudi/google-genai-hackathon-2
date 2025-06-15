@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaEyeSlash, FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa6";
+import ConfirmDeleteDialog from "./confirm-delete-dialog";
 // updateVisibilityは仮実装（APIが異なる場合は適宜修正）
 import type { PostWithMetadata } from "../repositories/schema";
 // Button, ConfirmDialogは既存UIに合わせて仮実装または置き換え
@@ -63,31 +64,12 @@ export default function PostCard({
           )}
         </div>
       )}
-      {/* ConfirmDialogは仮実装。必要に応じて置き換え */}
-      {isDialogOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="mb-4">このポストを削除しますか？</div>
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={() => {
-                  handleDelete();
-                  setIsDialogOpen(false);
-                }}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                削除
-              </button>
-              <button
-                onClick={() => setIsDialogOpen(false)}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                キャンセル
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDeleteDialog
+        open={isDialogOpen}
+        onConfirm={handleDelete}
+        onClose={() => setIsDialogOpen(false)}
+        message="このポストを削除しますか？"
+      />
     </div>
   );
 }

@@ -33,7 +33,7 @@ const PostForm = ({ onAdd }: PostFormProps) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full bg-white/90 rounded-2xl shadow-xl border border-indigo-100 p-6 flex flex-col gap-4 mb-4"
+      className="w-full bg-white/90 rounded-2xl shadow-xl border border-indigo-100 p-6 flex flex-col gap-4"
     >
       <input type="hidden" name="type" value="note" />
       <div className="space-y-4 pt-2">

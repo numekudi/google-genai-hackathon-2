@@ -40,8 +40,7 @@ const Home = () => {
   };
 
   return (
-    <div style={{ maxWidth: 480, margin: "0 auto" }}>
-      <h2>ホーム</h2>
+    <div className="max-w-3xl mx-auto">
       <PostForm onAdd={handleAddPost} />
       <Timeline
         posts={list}
