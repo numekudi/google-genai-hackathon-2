@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 import type { PostWithMetadata } from "../repositories/schema";
+import PostCard from "./post-card";
 
 type TimelineProps = {
   posts: PostWithMetadata[];
@@ -18,6 +19,7 @@ const Timeline = ({
   isLoading,
 }: TimelineProps) => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [patching, setPatching] = useState<string | null>(null);
   const fetcher = useFetcher();
 
   // IntersectionObserverで無限スクロール
@@ -53,6 +55,16 @@ const Timeline = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data]);
 
+  const handleToggleVisibility = async (id: string, next: boolean) => {
+    setPatching(id);
+    const formData = new FormData();
+    formData.append("postId", id);
+    formData.append("isInvisible", next.toString());
+    await fetcher.submit(formData, { method: "PATCH", action: "/api/posts" });
+    setPatching(null);
+    // ここでonAppendやpostsの更新が必要なら追加
+  };
+
   return (
     <div
       style={{
@@ -69,26 +81,12 @@ const Timeline = ({
         </div>
       )}
       {posts.map((post, i) => (
-        <div
+        <PostCard
           key={post.id}
-          style={{
-            borderBottom: "1px solid #eee",
-            padding: 8,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <div>{post.content}</div>
-            <div style={{ fontSize: 12, color: "#888" }}>
-              {new Date(post.createdAt).toLocaleString()}
-            </div>
-          </div>
-          <button onClick={() => onDelete(post.id)} style={{ color: "red" }}>
-            削除
-          </button>
-        </div>
+          post={post}
+          removePost={() => onDelete(post.id)}
+          onToggleVisibility={handleToggleVisibility}
+        />
       ))}
       <div ref={loadMoreRef} style={{ height: 32 }} />
       {(isLoading || fetcher.state === "loading") && (

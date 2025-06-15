@@ -6,7 +6,12 @@ import type {
 import { redirect } from "react-router";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getEmbedding } from "../../lib/vertexai/lib";
-import { createPost, deletePost, getPosts } from "../../repositories/posts";
+import {
+  createPost,
+  deletePost,
+  getPosts,
+  updatePost,
+} from "../../repositories/posts";
 import type { PostWithMetadata } from "../../repositories/schema";
 import { getSession } from "../../sessions.server";
 
@@ -63,7 +68,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       await deletePost(userId, postId);
       return { deleted: true };
     }
+  } else if (request.method === "PATCH") {
+    const formData = await request.formData();
+    const postId = formData.get("postId");
+    const isInvisible = formData.get("isInvisible");
+    if (
+      typeof postId === "string" &&
+      (isInvisible === "true" || isInvisible === "false")
+    ) {
+      const updated = await updatePost(userId, postId, {
+        isInvisible: isInvisible === "true",
+      });
+      return { updated: { id: postId, isInvisible: updated.isInvisible } };
+    }
   }
-
   return null;
 };
