@@ -1,4 +1,11 @@
-import { Outlet, redirect, type LoaderFunctionArgs } from "react-router";
+import { useEffect } from "react";
+import {
+  Outlet,
+  redirect,
+  useFetcher,
+  type LoaderFunctionArgs,
+} from "react-router";
+import { auth } from "~/lib/firebase.client";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getSession } from "~/sessions.server";
 import Footer from "../components/footer";
@@ -19,6 +26,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const fetcher = useFetcher();
+  useEffect(() => {
+    const unSub = auth.onIdTokenChanged(async (user) => {
+      if (user) {
+        const idToken = await user.getIdToken();
+        fetcher.submit(
+          { idToken },
+          { method: "post", action: "/api/sessions" }
+        );
+      }
+    });
+    return unSub;
+  }, []);
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
