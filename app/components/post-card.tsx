@@ -31,7 +31,7 @@ export default function PostCard({
     }
   };
   return (
-    <div className="w-full flex flex-col bg-white/90 rounded-2xl shadow-lg border border-indigo-100 p-6 transition hover:shadow-2xl">
+    <div className="w-full flex flex-col bg-white/90 shadow-lg border border-indigo-100 p-6 transition">
       <div className="flex justify-between items-center mb-2">
         <span className="text-xs text-indigo-400 font-semibold tracking-wide">
           {new Date(post.createdAt || post.timestamp).toLocaleString()}
