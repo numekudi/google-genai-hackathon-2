@@ -339,8 +339,6 @@ ${allPostsString.join("\n")}
 }
 
 export const loader = async ({ request }: { request: Request }) => {
-  console.log("Trends loader called");
-
   const session = await getSession(request.headers.get("Cookie"));
   const idToken = session.get("idToken");
   if (!idToken) return redirect("/");

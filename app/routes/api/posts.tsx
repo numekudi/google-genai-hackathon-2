@@ -44,7 +44,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const userId = user.uid; // Use the verified user ID from Firebase
 
   if (request.method === "POST") {
-    console.log("POSTリクエストを受信");
     const formData = await request.formData();
     const content = formData.get("content");
     if (typeof content === "string" && content.trim()) {
@@ -58,7 +57,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         { content, type: "note", contentEmbeddings },
         userId
       );
-      console.log("created post", created);
       return { created };
     }
   } else if (request.method === "DELETE") {

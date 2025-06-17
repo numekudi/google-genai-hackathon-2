@@ -30,7 +30,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unSub = auth.onIdTokenChanged(async (user) => {
       if (user) {
-        console.log("id token changed");
         const idToken = await user.getIdToken();
         fetcher.submit(
           { idToken },
