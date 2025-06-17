@@ -27,10 +27,10 @@ export default function Home() {
           action: "/api/sessions",
         }
       );
-      navigator("/home");
     } catch (e) {
     } finally {
       setLoading(false);
+      navigator("/home");
     }
   };
 
@@ -47,10 +47,10 @@ export default function Home() {
           action: "/api/sessions",
         }
       );
-      navigator("/home");
     } catch (e) {
     } finally {
       setLoading(false);
+      navigator("/home");
     }
   };
 
