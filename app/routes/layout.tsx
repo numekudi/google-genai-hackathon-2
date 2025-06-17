@@ -5,6 +5,7 @@ import {
   useFetcher,
   type LoaderFunctionArgs,
 } from "react-router";
+import { Toaster } from "~/components/ui/sonner";
 import { auth } from "~/lib/firebase.client";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getSession } from "~/sessions.server";
@@ -45,6 +46,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <MenuLayout>
           <Outlet />
         </MenuLayout>
+        <Toaster />
       </main>
     </div>
   );

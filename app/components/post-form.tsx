@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import type { action } from "~/routes/api/posts";
 import type { PostWithMetadata } from "../repositories/schema";
+import { showTrendAvailableToast } from "./trend-available-toast";
 import { Button } from "./ui/button";
 
 type PostFormProps = {
@@ -17,13 +18,14 @@ const PostForm = ({ onAdd }: PostFormProps) => {
       const createdPost = fetcher.data.created;
       if (createdPost) {
         onAdd(createdPost);
+        showTrendAvailableToast();
       }
     }
   }, [fetcher.data]);
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    fetcher.submit(
+    await fetcher.submit(
       { content: input },
       { method: "POST", action: "/api/posts" }
     );
