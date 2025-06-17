@@ -22,10 +22,12 @@ export default function TrendsPage() {
   const [consultation, setConsultation] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const url = "/api/trends";
     const eventSource = new EventSource(url);
+    setIsGenerating(true);
     eventSource.onmessage = (event) => {
       try {
         const data: SSEMessage = JSON.parse(event.data);
@@ -38,6 +40,7 @@ export default function TrendsPage() {
       }
     };
     eventSource.onerror = (e) => {
+      setIsGenerating(false);
       eventSource.close();
     };
     eventSource.onopen = () => setLoading(false);
@@ -60,6 +63,14 @@ export default function TrendsPage() {
           </div>
           <div className="text-gray-400 text-sm mt-2">
             トレンドを集計しています。少々お待ちください。
+          </div>
+        </div>
+      )}
+      {/* 生成中UI */}
+      {!loading && isGenerating && (
+        <div className="fixed bottom-24 right-4 z-50 flex flex-col items-center justify-center px-4 py-3 bg-yellow-50 rounded-xl border border-yellow-200 shadow-lg animate-fade-in min-w-[220px] max-w-xs">
+          <div className="text-yellow-500 text-xs">
+            AIがまとめや相談例を生成しています
           </div>
         </div>
       )}
