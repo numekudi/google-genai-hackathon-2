@@ -5,7 +5,7 @@ steps:
     args:
       [
         "-c",
-        "build --build-arg FIREBASE_WEBAPP_CONFIG=$$FIREBASE_WEBAPP_CONFIG --build-arg --no-cache -t $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA . -f Dockerfile",
+        "docker build --build-arg FIREBASE_WEBAPP_CONFIG=$$FIREBASE_WEBAPP_CONFIG --build-arg --no-cache -t $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA . -f Dockerfile",
       ]
     id: Build
   - name: gcr.io/cloud-builders/docker
