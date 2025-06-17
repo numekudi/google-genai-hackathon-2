@@ -21,5 +21,6 @@ export default [
     route("posts", "routes/api/posts.tsx"),
     route("users", "routes/api/users.tsx"),
     route("trends", "routes/api/trends.tsx"),
+    route("simulation", "routes/api/simulation.tsx"),
   ]),
 ] satisfies RouteConfig;

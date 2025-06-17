@@ -1,5 +1,3 @@
-const Simulation = () => {
-  return <div></div>;
-};
+import Simulation from "../features/simulation/Simulation";
 
 export default Simulation;
