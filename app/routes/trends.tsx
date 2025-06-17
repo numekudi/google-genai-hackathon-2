@@ -50,7 +50,19 @@ export default function TrendsPage() {
         <span>「いま」を見つめよう</span>
         <span className="text-lg">✨</span>
       </h2>
-      {loading && <div>読み込み中...</div>}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-12 bg-indigo-50 rounded-xl border border-indigo-100 shadow-inner animate-fade-in">
+          <div className="mb-4">
+            <span className="block w-10 h-10 border-4 border-indigo-300 border-t-indigo-500 rounded-full animate-spin"></span>
+          </div>
+          <div className="text-indigo-500 font-semibold text-lg tracking-wide">
+            読み込み中...
+          </div>
+          <div className="text-gray-400 text-sm mt-2">
+            トレンドを集計しています。少々お待ちください。
+          </div>
+        </div>
+      )}
       {error && <div className="text-red-500">{error}</div>}
       {!loading && !error && trends.length === 0 && (
         <p className="p-4 text-gray-400 bg-indigo-50 rounded-xl text-center">
