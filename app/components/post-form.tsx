@@ -33,13 +33,13 @@ const PostForm = ({ onAdd }: PostFormProps) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full bg-white/90 rounded-2xl shadow-xl border border-indigo-100 p-6 flex flex-col gap-4"
+      className="w-full bg-white dark:bg-gray-900 shadow-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col gap-4"
     >
       <input type="hidden" name="type" value="note" />
       <div className="space-y-4 pt-2">
         <textarea
           name="content"
-          className="border border-indigo-200 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 field-sizing-content resize-none p-4 text-base bg-indigo-50/60 placeholder-gray-400 transition"
+          className="border border-gray-200 dark:border-gray-700 dark:text-white w-full focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 field-sizing-content resize-none p-4 bg-white dark:bg-gray-900 placeholder-gray-400 dark:placeholder-gray-500 transition"
           placeholder="反芻思考、体調の変化、睡眠などを記録しよう"
           maxLength={1024}
           required
@@ -51,9 +51,9 @@ const PostForm = ({ onAdd }: PostFormProps) => {
         <div className="flex flex-row-reverse">
           <Button
             type="submit"
-            className={`px-6 py-2 rounded-full shadow-lg text-white font-bold text-base transition border-0 bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-600 hover:to-indigo-500 ${
+            className={`px-6 py-2 shadow-lg text-white font-bold text-base transition border-0 bg-indigo-400 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 ${
               fetcher.state === "submitting"
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
                 : ""
             }`}
             disabled={fetcher.state === "submitting"}

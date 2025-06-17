@@ -350,7 +350,12 @@ export const loader = async ({ request }: { request: Request }) => {
     async start(controller) {
       const retrievedPosts = await getPosts(uid, 1, 0);
       const post = retrievedPosts[0];
-      if (post?.trend && post.trend.trends && post.trend.summary) {
+      if (
+        post?.trend &&
+        post.trend.trends &&
+        post.trend.summary &&
+        post.trend.consultation
+      ) {
         // 既存データをSSEで送信
         controller.enqueue(
           encoder.encode(
@@ -365,6 +370,14 @@ export const loader = async ({ request }: { request: Request }) => {
             `data: ${JSON.stringify({
               type: "summary",
               content: post.trend.summary,
+            })}\n\n`
+          )
+        );
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              type: "consultation",
+              content: post.trend.consultation,
             })}\n\n`
           )
         );

@@ -29,22 +29,22 @@ export default function PostCard({
     }
   };
   return (
-    <div className="w-full flex flex-col bg-white/90 shadow-lg border border-indigo-100 p-6 transition">
+    <div className="w-full flex flex-col bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700 p-6 transition">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-xs text-indigo-400 font-semibold tracking-wide">
+        <span className="text-xs text-gray-400 dark:text-gray-500 font-semibold tracking-wide">
           {new Date(post.createdAt || post.timestamp).toLocaleString()}
         </span>
         <div className="flex gap-2">
           <button
             onClick={handleToggleVisibility}
-            className={`p-2 rounded-full border-0 bg-indigo-50 hover:bg-indigo-100 text-indigo-500 transition`}
+            className={`p-2 rounded-full border-0 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-300 transition`}
             title={isInvisible ? "表示する" : "非表示にする"}
           >
             {isInvisible ? <FaEye /> : <FaEyeSlash />}
           </button>
           <button
             onClick={() => setIsDialogOpen(true)}
-            className="p-2 rounded-full border-0 bg-red-50 hover:bg-red-100 text-red-400 transition"
+            className="p-2 rounded-full border-0 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-rose-400 dark:text-rose-300 transition"
             title="削除"
           >
             <FaTrash />
@@ -52,11 +52,13 @@ export default function PostCard({
         </div>
       </div>
       {isInvisible ? (
-        <p className="text-gray-400 italic text-sm">非表示</p>
+        <p className="text-gray-400 dark:text-gray-500 italic text-sm">
+          非表示
+        </p>
       ) : (
         <div className="flex flex-col gap-2">
           {post.type === "note" && (
-            <div className="pl-2 text-base text-gray-800 whitespace-pre-line">
+            <div className="pl-2 text-base text-gray-800 dark:text-gray-100 whitespace-pre-line">
               {post.content}
             </div>
           )}

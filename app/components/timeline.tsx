@@ -66,18 +66,11 @@ const Timeline = ({
   };
 
   return (
-    <div
-      style={{
-        minHeight: 400,
-        border: "1px solid #ccc",
-        borderRadius: 8,
-        paddingBottom: 16,
-      }}
-    >
+    <div className="min-h-[400px] border border-gray-200 dark:border-gray-700 pb-4 dark:bg-gray-900 transition">
       {posts.length === 0 && !hasMore && (
-        <div style={{ textAlign: "center", color: "#888", padding: 32 }}>
-          <span style={{ fontSize: 32, display: "block" }}>📝</span>
-          <span style={{ fontSize: 16 }}>まだ投稿がありません</span>
+        <div className="text-center text-gray-400 py-8">
+          <span className="text-4xl block">📝</span>
+          <span className="text-base">まだ投稿がありません</span>
         </div>
       )}
       {posts.map((post, i) => (
@@ -88,10 +81,10 @@ const Timeline = ({
           onToggleVisibility={handleToggleVisibility}
         />
       ))}
-      <div ref={loadMoreRef} style={{ height: 32 }} />
+      <div ref={loadMoreRef} className="h-8" />
       {(isLoading || fetcher.state === "loading") && (
-        <div style={{ textAlign: "center", padding: 8 }}>
-          <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-400"></span>
+        <div className="text-center py-2">
+          <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400 dark:border-gray-500 inline-block"></span>
         </div>
       )}
     </div>
