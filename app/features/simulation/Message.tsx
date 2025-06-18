@@ -31,7 +31,7 @@ export default function Message({
         {isLastElement && !isFirstElement && (
           <Button
             onClick={handleDelete}
-            className={`bg-red-50 p-2 rounded ${
+            className={`bg-red-50 dark:bg-red-900 p-2 rounded ${
               disabled ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={disabled}
@@ -42,7 +42,7 @@ export default function Message({
         <div className="flex items-center gap-2 flex-1">
           {isDoctor ? <FaUserDoctor /> : <FaUser />}
           <textarea
-            className="border rounded p-2 min-w-[200px] w-full"
+            className="border dark:border-gray-600 rounded p-2 min-w-[200px] w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             value={message.content}
             onChange={(e) => changeContent(e.target.value)}
             disabled={!isLastElement || disabled}
@@ -51,7 +51,7 @@ export default function Message({
         {isLastElement && (
           <Button
             onClick={handleSubmit}
-            className="bg-green-50 p-2 rounded"
+            className="bg-green-50 dark:bg-green-900 p-2 rounded"
             disabled={disabled}
           >
             <FaCheck color="black" />

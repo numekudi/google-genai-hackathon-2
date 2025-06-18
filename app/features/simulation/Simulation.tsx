@@ -52,7 +52,7 @@ export default function Simulation() {
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-xl mx-auto py-8">
+    <div className="flex flex-col gap-4 max-w-xl mx-auto py-8 text-gray-900 dark:text-white">
       {messages.map((msg, i) => (
         <Message
           key={i}
