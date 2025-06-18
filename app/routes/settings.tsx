@@ -62,7 +62,7 @@ const Settings = () => {
 
   if (isUserLoading) {
     return (
-      <div className="max-w-xl mx-auto py-10 px-4 text-center text-gray-400">
+      <div className="max-w-xl mx-auto py-10 px-4 text-center text-gray-400 dark:text-gray-300">
         Loading...
       </div>
     );
@@ -71,29 +71,29 @@ const Settings = () => {
   const isAnonymous = user?.isAnonymous;
 
   return (
-    <div className="max-w-xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-8 text-indigo-600 flex items-center gap-2">
+    <div className="max-w-xl mx-auto py-10 px-4 text-gray-900 dark:text-white">
+      <h1 className="text-2xl font-bold mb-8 text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
         <span>⚙️</span> アカウント設定
       </h1>
-      <div className="bg-white rounded-2xl shadow-xl p-6 space-y-6 border border-indigo-100">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 space-y-6 border border-indigo-100 dark:border-gray-700">
         <div className="flex items-center gap-4">
           {/* アイコン表示は省略（Image未導入のため） */}
           <div>
             {isAnonymous ? (
               <>
-                <div className="text-lg font-bold text-gray-500">
+                <div className="text-lg font-bold text-gray-500 dark:text-gray-400">
                   匿名ログイン中
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs text-gray-400 dark:text-gray-300 mt-1">
                   Googleアカウントに移行できます
                 </div>
               </>
             ) : (
               <>
-                <div className="text-lg font-bold text-indigo-700">
+                <div className="text-lg font-bold text-indigo-700 dark:text-indigo-400">
                   {user?.displayName || "Googleアカウント"}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">{user?.email}</div>
+                <div className="text-xs text-gray-400 dark:text-gray-300 mt-1">{user?.email}</div>
               </>
             )}
           </div>
