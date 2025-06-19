@@ -48,9 +48,7 @@ const Timeline = ({
       const newPosts = fetcher.data.posts.filter(
         (p: PostWithMetadata) => !existingIds.has(p.id)
       );
-      if (newPosts.length > 0) {
-        onAppend(newPosts);
-      }
+      onAppend(newPosts);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data]);
@@ -82,7 +80,7 @@ const Timeline = ({
         />
       ))}
       <div ref={loadMoreRef} className="h-8" />
-      {(isLoading || fetcher.state === "loading") && (
+      {(isLoading || fetcher.state === "loading") && hasMore && (
         <div className="text-center py-2">
           <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400 dark:border-gray-500 inline-block"></span>
         </div>
