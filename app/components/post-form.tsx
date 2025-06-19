@@ -4,6 +4,7 @@ import type { action } from "~/routes/api/posts";
 import type { PostWithMetadata } from "../repositories/schema";
 import { showTrendAvailableToast } from "./trend-available-toast";
 import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
 
 type PostFormProps = {
   onAdd: (post: PostWithMetadata) => void;
@@ -39,9 +40,9 @@ const PostForm = ({ onAdd }: PostFormProps) => {
     >
       <input type="hidden" name="type" value="note" />
       <div className="space-y-4 pt-2">
-        <textarea
+        <Textarea
           name="content"
-          className="border border-gray-200 dark:border-gray-700 dark:text-white w-full focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 field-sizing-content resize-none p-4 bg-white dark:bg-gray-900 placeholder-gray-400 dark:placeholder-gray-500 transition"
+          className="resize-none dark:text-white"
           placeholder="反芻思考、体調の変化、睡眠などを記録しよう"
           maxLength={1024}
           required
@@ -53,7 +54,7 @@ const PostForm = ({ onAdd }: PostFormProps) => {
         <div className="flex flex-row-reverse">
           <Button
             type="submit"
-            className={`px-6 py-2 shadow-lg text-white font-bold text-base transition border-0 bg-indigo-400 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 ${
+            className={`cursor-pointer px-6 py-2 shadow-lg text-white font-bold text-base transition border-0 bg-indigo-400 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 ${
               fetcher.state === "submitting"
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
                 : ""

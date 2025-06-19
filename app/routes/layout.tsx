@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return unSub;
   }, []);
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen dark:bg-slate-800 flex flex-col">
       <main className="flex-1">
         <MenuLayout>
           <Outlet />

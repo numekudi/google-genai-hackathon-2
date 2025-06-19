@@ -9,6 +9,8 @@ WORKDIR /app
 RUN npm ci --omit=dev
 
 FROM node:20-alpine AS build-env
+ARG FIREBASE_WEBAPP_CONFIG
+ENV FIREBASE_WEBAPP_CONFIG=${FIREBASE_WEBAPP_CONFIG}
 COPY . /app/
 COPY --from=development-dependencies-env /app/node_modules /app/node_modules
 WORKDIR /app

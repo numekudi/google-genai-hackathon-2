@@ -82,7 +82,7 @@ ${p.content}
 心療内科に通う患者になりきってください。
 ユーザーの過去ポストを参考に、心療内科医への返答候補を3~5個生成すること。
 ユーザーの過去ポストの内容を引用できるとより良いです。
-質問候補のみ出力すること。
+ユーザー目線での質問候補のみ出力すること。
 
 ## トレンド
 ${posts[0]?.trend?.trends ?? ""}
@@ -111,7 +111,7 @@ ${userPosts.join("\n")}
         type: SchemaType.ARRAY,
         items: {
           type: SchemaType.STRING,
-          description: "患者が回答しそうな内容",
+          description: "患者が発言しそうな内容",
         },
       },
       responseMimeType: "application/json",
