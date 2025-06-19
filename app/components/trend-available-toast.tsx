@@ -5,5 +5,6 @@ export function showTrendAvailableToast() {
     description:
       "新しいトレンド分析が利用できます。トレンドページをチェックしてください。",
     duration: 4000,
+    position: "top-center",
   });
 }

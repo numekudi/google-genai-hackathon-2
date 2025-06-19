@@ -1,6 +1,7 @@
 import { FaUser } from "react-icons/fa";
 import { FaCheck, FaUserDoctor, FaX } from "react-icons/fa6";
 import { Button } from "../../components/ui/button";
+import { Textarea } from "../../components/ui/textarea";
 import type { HumanMessage } from "./types";
 
 export default function Message({
@@ -41,13 +42,14 @@ export default function Message({
         )}
         <div className="flex items-center gap-2 flex-1">
           {isDoctor ? <FaUserDoctor /> : <FaUser />}
-          <textarea
-            className="border dark:border-gray-600 rounded p-2 min-w-[200px] w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          <Textarea
+            className="min-w-[200px] w-full"
             value={message.content}
             onChange={(e) => changeContent(e.target.value)}
             disabled={!isLastElement || disabled}
           />
         </div>
+
         {isLastElement && (
           <Button
             onClick={handleSubmit}
@@ -57,6 +59,11 @@ export default function Message({
             <FaCheck color="black" />
           </Button>
         )}
+      </div>
+      <div className="text-center text-gray-500 text-sm px-2">
+        {isDoctor
+          ? "医者に聞かれて困ったことを入力してみましょう"
+          : "あなたの症状や悩みを入力してみましょう"}
       </div>
       {message.suggestions && message.suggestions.length > 0 && (
         <div className="flex flex-col gap-2 mt-2 px-2 w-full">
