@@ -26,7 +26,7 @@ export default function Message({
     <div className="w-full">
       <div
         className={`flex items-center gap-2 p-2 ${
-          isDoctor ? "justify-start" : "justify-end bg-indigo-50"
+          isDoctor ? "justify-start" : "justify-end bg-indigo-50 dark:bg-indigo-900"
         } w-full`}
       >
         {isLastElement && !isFirstElement && (
