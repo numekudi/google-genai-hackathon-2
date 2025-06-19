@@ -8,7 +8,7 @@ const MenuLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="max-w-2xl mx-auto h-dvh flex flex-col">
-      <div className="flex-1 pb-16 w-full h-h-full overflow-y-scroll scrollbar-hide">
+      <div className="flex-1 w-full h-h-full overflow-y-scroll scrollbar-hide">
         {children}
       </div>
       <div className="left-0 right-0 bottom-0 h-16 w-full flex bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 shadow-xl z-30">

@@ -48,7 +48,7 @@ export default function TrendsPage() {
   }, []);
 
   return (
-    <div className="overflow-y-scroll pb-20 hidden-scrollbar h-full border-x border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg p-4 max-w-2xl mx-auto mt-8">
+    <div className="border-x border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg p-4 max-w-2xl mx-auto mt-8">
       <h2 className="text-2xl font-bold text-indigo-500 dark:text-indigo-400 mb-4 flex items-center gap-2">
         <span>「いま」を見つめよう</span>
         <span className="text-lg">✨</span>
@@ -68,7 +68,7 @@ export default function TrendsPage() {
       )}
       {/* 生成中UI */}
       {!loading && isGenerating && (
-        <div className="fixed bottom-24 right-4 z-50 flex flex-col items-center justify-center px-4 py-3 bg-yellow-50 dark:bg-gray-800 rounded-xl border border-yellow-200 dark:border-gray-700 shadow-lg animate-fade-in min-w-[220px] max-w-xs">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center justify-center px-4 py-3 bg-yellow-50 dark:bg-gray-800 rounded-xl border border-yellow-200 dark:border-gray-700 shadow-lg animate-fade-in min-w-[220px] max-w-xs">
           <div className="text-yellow-500 dark:text-yellow-400 text-xs">
             AIがまとめや相談例を生成しています
           </div>
