@@ -2,8 +2,9 @@ import {
   GoogleAuthProvider,
   signInAnonymously,
   signInWithPopup,
+  onAuthStateChanged,
 } from "firebase/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Markdown from "react-markdown";
 import { useFetcher, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
@@ -14,6 +15,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const fetcher = useFetcher();
   const navigator = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigator("/home");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigator]);
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
