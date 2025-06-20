@@ -5,6 +5,8 @@ export const postSchema = z.object({
   content: z.string().max(1024).min(1),
   type: z.literal("note"),
   isInvisible: z.boolean().optional(),
+  mood: z.number().min(1).max(7).optional(),
+  moodType: z.enum(["manual", "estimated"]).optional(),
   trend: z
     .object({
       summary: z.string().optional(),

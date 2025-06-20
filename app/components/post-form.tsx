@@ -13,6 +13,7 @@ type PostFormProps = {
 const PostForm = ({ onAdd }: PostFormProps) => {
   const fetcher = useFetcher<typeof action>();
   const [input, setInput] = useState("");
+  const [mood, setMood] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (fetcher.data) {
@@ -26,11 +27,13 @@ const PostForm = ({ onAdd }: PostFormProps) => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const formData = { content: input, ...(mood && { mood: mood.toString() }) };
     await fetcher.submit(
-      { content: input },
+      formData,
       { method: "POST", action: "/api/posts" }
     );
     setInput("");
+    setMood(undefined);
   };
 
   return (
@@ -51,6 +54,52 @@ const PostForm = ({ onAdd }: PostFormProps) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
+        
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            気分レベル（任意）
+          </label>
+          <div className="space-y-2">
+            <div className="grid grid-cols-7 gap-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setMood(level)}
+                  disabled={fetcher.state === "submitting"}
+                  className={`h-8 rounded-md border-2 transition ${
+                    mood === level
+                      ? "border-indigo-500 bg-indigo-500"
+                      : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-gray-700"
+                  }`}
+                >
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>低調</span>
+              <span>普通</span>
+              <span>良好</span>
+            </div>
+            <div className="flex items-center justify-between">
+              {mood && (
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  選択中: {mood}/7
+                </span>
+              )}
+              {mood && (
+                <button
+                  type="button"
+                  onClick={() => setMood(undefined)}
+                  className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  disabled={fetcher.state === "submitting"}
+                >
+                  選択をクリア
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
         <div className="flex flex-row-reverse">
           <Button
             type="submit"
