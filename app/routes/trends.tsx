@@ -45,7 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const userId = user.uid; // Use the verified user ID from Firebase
   const res = await getPostsByTimeRange(
     userId,
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 過去30日間
+    new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000), // 過去90日間
     100
   );
   if (!res) return { posts: [] };
@@ -90,17 +90,11 @@ export default function TrendsPage({ loaderData }: Route.ComponentProps) {
   const postsWithMood = loaderData.posts
     .filter((post: any) => post.mood !== undefined)
     .map((post: any) => ({
-      date: new Date(post.createdAt || post.timestamp).toLocaleDateString(
-        "ja-JP",
-        {
-          month: "numeric",
-          day: "numeric",
-        }
-      ),
+      // timestampはDate型に変換しておく
+      timestamp: new Date(post.createdAt || post.timestamp).getTime(),
       mood: post.mood,
-      timestamp: post.createdAt || post.timestamp,
     }))
-    .sort((a: MoodData, b: MoodData) => a.timestamp - b.timestamp);
+    .sort((a, b) => a.timestamp - b.timestamp);
 
   return (
     <div className="border-x border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg p-4 max-w-2xl mx-auto mt-8">
@@ -163,8 +157,15 @@ export default function TrendsPage({ loaderData }: Route.ComponentProps) {
                         className="stroke-muted"
                       />
                       <XAxis
-                        dataKey="date"
+                        dataKey="timestamp"
                         className="text-xs fill-muted-foreground"
+                        tickFormatter={(ts) => {
+                          const d = new Date(ts);
+                          return `${d.getMonth() + 1}/${d.getDate()}`;
+                        }}
+                        type="number"
+                        domain={["dataMin", "dataMax"]}
+                        scale="time"
                       />
                       <YAxis
                         domain={[1, 7]}
@@ -173,9 +174,15 @@ export default function TrendsPage({ loaderData }: Route.ComponentProps) {
                       <ChartTooltip
                         content={({ active, payload, label }) => {
                           if (active && payload && payload.length) {
+                            const d = new Date(payload[0].payload.timestamp);
                             return (
                               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-lg">
-                                <p className="text-sm font-medium">{`日付: ${label}`}</p>
+                                <p className="text-sm font-medium">{`日付: ${
+                                  d.getMonth() + 1
+                                }/${d.getDate()} ${d.getHours()}:${d
+                                  .getMinutes()
+                                  .toString()
+                                  .padStart(2, "0")}`}</p>
                                 <p className="text-sm text-indigo-600 dark:text-indigo-400">
                                   {`気分: ${payload[0].value}/7`}
                                 </p>
@@ -205,7 +212,7 @@ export default function TrendsPage({ loaderData }: Route.ComponentProps) {
                   </ResponsiveContainer>
                 </ChartContainer>
                 <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-                  横軸: 日付 / 縦軸: 気分レベル (1-7)
+                  横軸: 日付・時刻 / 縦軸: 気分レベル (1-7)
                 </div>
               </div>
             </section>

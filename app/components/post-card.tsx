@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { FaEyeSlash, FaTrash, FaEdit } from "react-icons/fa";
+import { FaEdit, FaEyeSlash, FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa6";
 import type { PostWithMetadata } from "../repositories/schema";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 export default function PostCard({
   post,
@@ -55,16 +61,6 @@ export default function PostCard({
         </span>
         <div className="flex gap-2">
           <button
-            onClick={() => {
-              setTempMood(post.mood || 4);
-              setIsMoodDialogOpen(true);
-            }}
-            className="p-2 rounded-full border-0 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-300 transition"
-            title={post.mood ? "気分を編集" : "気分を追加"}
-          >
-            <FaEdit />
-          </button>
-          <button
             onClick={handleToggleVisibility}
             className={`p-2 rounded-full border-0 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-300 transition`}
             title={isInvisible ? "表示する" : "非表示にする"}
@@ -92,10 +88,25 @@ export default function PostCard({
             </div>
           )}
           {post.mood && (
-            <div className="pl-2 mt-2">
-              <span className={`text-sm font-medium ${getMoodColor(post.mood)}`}>
-                気分: {post.mood}/7{post.moodType === "estimated" ? " (推定)" : ""}
-              </span>
+            <div className="pl-2 mt-2 flex items-center w-full">
+              <div
+                className={`flex-1 text-sm font-medium ${getMoodColor(
+                  post.mood
+                )}`}
+              >
+                気分: {post.mood}/7
+                {post.moodType === "estimated" ? " (推定)" : ""}
+              </div>
+              <button
+                onClick={() => {
+                  setTempMood(post.mood || 4);
+                  setIsMoodDialogOpen(true);
+                }}
+                className="p-2 rounded-full border-0 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-300 transition"
+                title={post.mood ? "気分を編集" : "気分を追加"}
+              >
+                <FaEdit />
+              </button>
             </div>
           )}
         </div>
@@ -106,13 +117,15 @@ export default function PostCard({
         onClose={() => setIsDialogOpen(false)}
         message="このポストを削除しますか？"
       />
-      
+
       <Dialog open={isMoodDialogOpen} onOpenChange={setIsMoodDialogOpen}>
         <DialogContent className="bg-white dark:bg-gray-900">
           <DialogHeader>
-            <DialogTitle>{post.mood ? "気分レベルを編集" : "気分レベルを追加"}</DialogTitle>
+            <DialogTitle>
+              {post.mood ? "気分レベルを編集" : "気分レベルを追加"}
+            </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -130,8 +143,7 @@ export default function PostCard({
                           ? "border-indigo-500 bg-indigo-500"
                           : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-gray-700"
                       }`}
-                    >
-                    </button>
+                    ></button>
                   ))}
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -140,14 +152,16 @@ export default function PostCard({
                   <span>良好</span>
                 </div>
                 <div className="text-center">
-                  <span className={`text-sm font-medium ${getMoodColor(tempMood)}`}>
+                  <span
+                    className={`text-sm font-medium ${getMoodColor(tempMood)}`}
+                  >
                     選択中: {tempMood}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button
               type="button"
