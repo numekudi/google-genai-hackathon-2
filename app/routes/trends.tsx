@@ -41,6 +41,7 @@ export default function TrendsPage() {
     };
     eventSource.onerror = (e) => {
       setIsGenerating(false);
+      setLoading(false);
       eventSource.close();
     };
     eventSource.onopen = () => setLoading(false);

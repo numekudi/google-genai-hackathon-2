@@ -344,12 +344,15 @@ export const loader = async ({ request }: { request: Request }) => {
   if (!idToken) return redirect("/");
   const user = await adminAuth.verifyIdToken(idToken as string);
   const uid = user.uid; // Use the verified user ID from Firebase
+  const retrievedPosts = await getPosts(uid, 1, 0);
+  const post = retrievedPosts[0];
+  if (!post) {
+    return new Response("No posts found", { status: 404 });
+  }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const retrievedPosts = await getPosts(uid, 1, 0);
-      const post = retrievedPosts[0];
       if (
         post?.trend &&
         post.trend.trends &&
