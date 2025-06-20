@@ -5,7 +5,7 @@ import type {
 } from "react-router";
 import { redirect } from "react-router";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
-import { getEmbedding } from "../../lib/vertexai/lib";
+import { getEmbedding, estimateMood } from "../../lib/vertexai/lib";
 import {
   createPost,
   deletePost,
@@ -46,6 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method === "POST") {
     const formData = await request.formData();
     const content = formData.get("content");
+    const moodStr = formData.get("mood");
     if (typeof content === "string" && content.trim()) {
       let contentEmbeddings: number[] | undefined = undefined;
       try {
@@ -53,10 +54,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       } catch (e) {
         console.error("embedding生成失敗", e);
       }
-      const created = await createPost(
-        { content, type: "note", contentEmbeddings },
-        userId
-      );
+      
+      let mood = moodStr && typeof moodStr === "string" ? Number(moodStr) : undefined;
+      let moodType: "manual" | "estimated" | undefined = undefined;
+      
+      if (mood && mood >= 1 && mood <= 7) {
+        moodType = "manual";
+      } else {
+        try {
+          mood = await estimateMood(content);
+          moodType = "estimated";
+        } catch (error) {
+          console.error("Failed to estimate mood:", error);
+          mood = 4;
+          moodType = "estimated";
+        }
+      }
+      
+      const postData: any = { content, type: "note", contentEmbeddings, mood, moodType };
+      
+      const created = await createPost(postData, userId);
       return { created };
     }
   } else if (request.method === "DELETE") {
@@ -70,14 +87,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const postId = formData.get("postId");
     const isInvisible = formData.get("isInvisible");
-    if (
-      typeof postId === "string" &&
-      (isInvisible === "true" || isInvisible === "false")
-    ) {
-      const updated = await updatePost(userId, postId, {
-        isInvisible: isInvisible === "true",
-      });
-      return { updated: { id: postId, isInvisible: updated.isInvisible } };
+    const moodStr = formData.get("mood");
+    
+    if (typeof postId === "string") {
+      const updateData: any = {};
+      
+      if (isInvisible === "true" || isInvisible === "false") {
+        updateData.isInvisible = isInvisible === "true";
+      }
+      
+      if (moodStr && typeof moodStr === "string") {
+        const mood = Number(moodStr);
+        if (mood >= 1 && mood <= 7) {
+          updateData.mood = mood;
+          updateData.moodType = "manual";
+        }
+      }
+      
+      if (Object.keys(updateData).length > 0) {
+        await updatePost(userId, postId, updateData);
+        return { updated: { id: postId, ...updateData } };
+      }
     }
   }
   return null;

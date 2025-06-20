@@ -7,6 +7,7 @@ type TimelineProps = {
   posts: PostWithMetadata[];
   onDelete: (id: string) => void;
   onAppend: (posts: PostWithMetadata[]) => void;
+  onUpdatePost: (updatedPost: PostWithMetadata) => void;
   hasMore: boolean;
   isLoading: boolean;
 };
@@ -15,6 +16,7 @@ const Timeline = ({
   posts,
   onDelete,
   onAppend,
+  onUpdatePost,
   hasMore,
   isLoading,
 }: TimelineProps) => {
@@ -63,6 +65,21 @@ const Timeline = ({
     // ここでonAppendやpostsの更新が必要なら追加
   };
 
+  const handleUpdateMood = async (id: string, mood: number) => {
+    setPatching(id);
+    const formData = new FormData();
+    formData.append("postId", id);
+    formData.append("mood", mood.toString());
+    await fetcher.submit(formData, { method: "PATCH", action: "/api/posts" });
+    setPatching(null);
+
+    // ローカル状態を更新
+    const updatedPost = posts.find((p) => p.id === id);
+    if (updatedPost) {
+      onUpdatePost({ ...updatedPost, mood, moodType: "manual" });
+    }
+  };
+
   return (
     <div className="min-h-[400px] border border-gray-200 dark:border-gray-700 pb-4 dark:bg-gray-900 transition">
       {posts.length === 0 && !hasMore && (
@@ -77,6 +94,7 @@ const Timeline = ({
           post={post}
           removePost={() => onDelete(post.id)}
           onToggleVisibility={handleToggleVisibility}
+          onUpdateMood={handleUpdateMood}
         />
       ))}
       <div ref={loadMoreRef} className="h-8" />
