@@ -87,8 +87,8 @@ export default function PostCard({
               {post.content}
             </div>
           )}
-          {post.mood && (
-            <div className="pl-2 mt-2 flex items-center w-full">
+          <div className="pl-2 mt-2 flex items-center w-full">
+            {post.mood ? (
               <div
                 className={`flex-1 text-sm font-medium ${getMoodColor(
                   post.mood
@@ -97,18 +97,22 @@ export default function PostCard({
                 気分: {post.mood}/7
                 {post.moodType === "estimated" ? " (推定)" : ""}
               </div>
-              <button
-                onClick={() => {
-                  setTempMood(post.mood || 4);
-                  setIsMoodDialogOpen(true);
-                }}
-                className="p-2 rounded-full border-0 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-300 transition"
-                title={post.mood ? "気分を編集" : "気分を追加"}
-              >
-                <FaEdit />
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="flex-1 text-sm font-medium text-gray-400 dark:text-gray-500">
+                気分: なし
+              </div>
+            )}
+            <button
+              onClick={() => {
+                setTempMood(post.mood || 4);
+                setIsMoodDialogOpen(true);
+              }}
+              className="p-2 rounded-full border-0 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-300 transition"
+              title={post.mood ? "気分を編集" : "気分を追加"}
+            >
+              <FaEdit />
+            </button>
+          </div>
         </div>
       )}
       <ConfirmDeleteDialog
