@@ -39,6 +39,15 @@ const Home = () => {
     if (posts.length === 0) setHasMore(false);
   };
 
+  // 投稿更新（気分変更など）
+  const handleUpdatePost = (updatedPost: PostWithMetadata) => {
+    setList((prev) => 
+      prev.map((post) => 
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    );
+  };
+
   return (
     <div className="max-w-3xl mx-auto">
       <PostForm onAdd={handleAddPost} />
@@ -46,6 +55,7 @@ const Home = () => {
         posts={list}
         onDelete={handleDelete}
         onAppend={handleAppend}
+        onUpdatePost={handleUpdatePost}
         hasMore={hasMore}
         isLoading={
           fetcher.state === "submitting" || fetcher.state === "loading"

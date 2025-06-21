@@ -1,5 +1,19 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { redirect, type LoaderFunctionArgs } from "react-router";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { ChartContainer, ChartTooltip } from "~/components/ui/chart";
+import { adminAuth } from "~/lib/firebaseAdmin.server";
+import { getPostsByTimeRange } from "~/repositories/posts";
+import { getSession } from "~/sessions.server";
+import type { Route } from "./+types/trends";
 
 interface TrendsDelta {
   type: "trends";
@@ -16,7 +30,32 @@ interface ConsultationDelta {
 
 type SSEMessage = TrendsDelta | SummaryDelta | ConsultationDelta;
 
-export default function TrendsPage() {
+interface MoodData {
+  date: string;
+  mood: number;
+  timestamp: number;
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  // /api/posts から気分データを取得
+  const session = await getSession(request.headers.get("Cookie"));
+  const idToken = session.get("idToken");
+  if (!idToken) return redirect("/");
+  const user = await adminAuth.verifyIdToken(idToken as string);
+  const userId = user.uid; // Use the verified user ID from Firebase
+  const res = await getPostsByTimeRange(
+    userId,
+    new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000), // 過去90日間
+    100
+  );
+  if (!res) return { posts: [] };
+  const posts = res.map((post) => ({
+    ...post,
+  }));
+  return { posts };
+}
+
+export default function TrendsPage({ loaderData }: Route.ComponentProps) {
   const [trends, setTrends] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
   const [consultation, setConsultation] = useState("");
@@ -39,13 +78,24 @@ export default function TrendsPage() {
         setError("データの解析に失敗しました");
       }
     };
-    eventSource.onerror = (e) => {
+    eventSource.onerror = () => {
       setIsGenerating(false);
+      setLoading(false);
       eventSource.close();
     };
     eventSource.onopen = () => setLoading(false);
     return () => eventSource.close();
   }, []);
+
+  // 気分データを処理
+  const postsWithMood = loaderData.posts
+    .filter((post: any) => post.mood !== undefined)
+    .map((post: any) => ({
+      // timestampはDate型に変換しておく
+      timestamp: new Date(post.createdAt || post.timestamp).getTime(),
+      mood: post.mood,
+    }))
+    .sort((a, b) => a.timestamp - b.timestamp);
 
   return (
     <div className="border-x border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-lg p-4 max-w-2xl mx-auto mt-8">
@@ -84,6 +134,91 @@ export default function TrendsPage() {
       )}
       {!loading && !error && trends.length > 0 && (
         <div className="space-y-6">
+          {/* 気分チャート */}
+          {postsWithMood.length > 0 && (
+            <section>
+              <h3 className="text-lg font-semibold mb-2 text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                <span>気分の変化</span>
+                <span>📊</span>
+              </h3>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <ChartContainer
+                  config={{
+                    mood: {
+                      label: "気分",
+                      color: "hsl(var(--chart-1))",
+                    },
+                  }}
+                  className="h-[300px] max-w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={postsWithMood}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="stroke-muted"
+                      />
+                      <XAxis
+                        dataKey="timestamp"
+                        className="text-xs fill-muted-foreground"
+                        tickFormatter={(ts) => {
+                          const d = new Date(ts);
+                          return `${d.getMonth() + 1}/${d.getDate()}`;
+                        }}
+                        type="number"
+                        domain={["dataMin", "dataMax"]}
+                        scale="time"
+                      />
+                      <YAxis
+                        domain={[1, 7]}
+                        className="text-xs fill-muted-foreground"
+                      />
+                      <ChartTooltip
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const d = new Date(payload[0].payload.timestamp);
+                            return (
+                              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-lg">
+                                <p className="text-sm font-medium">{`日付: ${
+                                  d.getMonth() + 1
+                                }/${d.getDate()} ${d.getHours()}:${d
+                                  .getMinutes()
+                                  .toString()
+                                  .padStart(2, "0")}`}</p>
+                                <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                                  {`気分: ${payload[0].value}/7`}
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="mood"
+                        stroke="hsl(239, 84%, 67%)"
+                        strokeWidth={3}
+                        dot={{
+                          fill: "hsl(239, 84%, 67%)",
+                          strokeWidth: 2,
+                          r: 4,
+                        }}
+                        activeDot={{
+                          r: 6,
+                          stroke: "hsl(239, 84%, 67%)",
+                          strokeWidth: 2,
+                        }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                  横軸: 日付・時刻 / 縦軸: 気分レベル (1-7)
+                </div>
+              </div>
+            </section>
+          )}
+
           <section>
             <h3 className="text-lg font-semibold mb-2 text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
               <span>トレンドリスト</span>

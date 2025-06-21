@@ -5,14 +5,14 @@ import type {
 } from "react-router";
 import { redirect } from "react-router";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
-import { getEmbedding } from "../../lib/vertexai/lib";
+import { estimateMood, getEmbedding } from "../../lib/vertexai/lib";
 import {
   createPost,
   deletePost,
   getPosts,
   updatePost,
 } from "../../repositories/posts";
-import type { PostWithMetadata } from "../../repositories/schema";
+import type { Post, PostWithMetadata } from "../../repositories/schema";
 import { getSession } from "../../sessions.server";
 
 export function shouldRevalidate({}: ShouldRevalidateFunctionArgs) {
@@ -46,17 +46,48 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method === "POST") {
     const formData = await request.formData();
     const content = formData.get("content");
+    const moodStr = formData.get("mood");
     if (typeof content === "string" && content.trim()) {
       let contentEmbeddings: number[] | undefined = undefined;
-      try {
-        contentEmbeddings = await getEmbedding(content);
-      } catch (e) {
-        console.error("embedding生成失敗", e);
+      let mood: number | undefined = undefined;
+      let moodType: "manual" | "estimated" | undefined = undefined;
+
+      if (
+        moodStr &&
+        typeof moodStr === "string" &&
+        Number(moodStr) >= 1 &&
+        Number(moodStr) <= 7
+      ) {
+        // 手動入力が有効な場合
+        [contentEmbeddings] = await Promise.all([getEmbedding(content)]);
+        mood = Number(moodStr);
+        moodType = "manual";
+      } else {
+        // 並列でembedding生成とmood推定
+        const [embeddingResult, moodResult] = await Promise.all([
+          getEmbedding(content).catch((e) => {
+            console.error("embedding生成失敗", e);
+            return undefined;
+          }),
+          estimateMood(content).catch((e) => {
+            console.error("Failed to estimate mood:", e);
+            return 4;
+          }),
+        ]);
+        contentEmbeddings = embeddingResult;
+        mood = moodResult;
+        moodType = "estimated";
       }
-      const created = await createPost(
-        { content, type: "note", contentEmbeddings },
-        userId
-      );
+
+      const postData: Post = {
+        content,
+        type: "note",
+        contentEmbeddings,
+        mood,
+        moodType,
+      };
+
+      const created = await createPost(postData, userId);
       return { created };
     }
   } else if (request.method === "DELETE") {
@@ -70,14 +101,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const postId = formData.get("postId");
     const isInvisible = formData.get("isInvisible");
-    if (
-      typeof postId === "string" &&
-      (isInvisible === "true" || isInvisible === "false")
-    ) {
-      const updated = await updatePost(userId, postId, {
-        isInvisible: isInvisible === "true",
-      });
-      return { updated: { id: postId, isInvisible: updated.isInvisible } };
+    const moodStr = formData.get("mood");
+
+    if (typeof postId === "string") {
+      const updateData: any = {};
+
+      if (isInvisible === "true" || isInvisible === "false") {
+        updateData.isInvisible = isInvisible === "true";
+      }
+
+      if (moodStr && typeof moodStr === "string") {
+        const mood = Number(moodStr);
+        if (mood >= 1 && mood <= 7) {
+          updateData.mood = mood;
+          updateData.moodType = "manual";
+        }
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        await updatePost(userId, postId, updateData);
+        return { updated: { id: postId, ...updateData } };
+      }
     }
   }
   return null;

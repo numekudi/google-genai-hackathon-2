@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { MetaFunction } from "react-router";
 import {
   Outlet,
   redirect,
@@ -10,6 +11,13 @@ import { auth } from "~/lib/firebase.client";
 import { adminAuth } from "~/lib/firebaseAdmin.server";
 import { getSession } from "~/sessions.server";
 import MenuLayout from "../components/menu-layout";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Solilo" },
+    { name: "description", content: "Welcome to Solilo!" },
+  ];
+};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
