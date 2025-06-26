@@ -1,13 +1,19 @@
 import {
   GoogleAuthProvider,
+  onAuthStateChanged,
   signInAnonymously,
   signInWithPopup,
-  onAuthStateChanged,
 } from "firebase/auth";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import { useFetcher, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { auth } from "../lib/firebase.client";
 
 export default function Home() {
@@ -67,14 +73,14 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-clover dark:bg-gray-950 text-gray-800 dark:text-gray-100">
-      <div className="w-full mt-16 px-12 bg-white dark:bg-gray-900 rounded-lg">
+      <div className="w-full mt-16 py-4 px-12 bg-white dark:bg-gray-900 rounded-lg">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-gray-800 dark:text-gray-100 mb-4 tracking-tight">
             Solilo
           </h1>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-2">
-            Soliloは「独り言・独白」を意味するSoliloquyから生まれた、一人用SNSアプリです。
+            Soliloは「独り言」を意味するSoliloquyから生まれた、一人用SNSアプリです。
             自分だけの空間で、内なる声や日々の気持ちを気軽につぶやき、記録できます。
           </p>
           <p className="text-md text-gray-500 dark:text-gray-400 mb-4">
@@ -91,24 +97,28 @@ export default function Home() {
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-6">
-          <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              トレンド可視化
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+          <Card className="bg-white dark:bg-gray-800 shadow-md border-0">
+            <CardHeader>
+              <CardTitle className="dark:text-gray-100">
+                トレンド可視化
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-gray-600 dark:text-gray-300">
               あなたの投稿から自動でトレンドを抽出。日々の気分や体調の変化をグラフで可視化し、
               自分自身をより深く理解する手助けをします。
-            </p>
-          </div>
-          <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              会話シミュレーション
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+            </CardContent>
+          </Card>
+          <Card className="bg-white dark:bg-gray-800 shadow-md border-0">
+            <CardHeader>
+              <CardTitle className="dark:text-gray-100">
+                会話シミュレーション
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-gray-600 dark:text-gray-300">
               仮想のカウンセラーや医師との会話をシミュレート。伝えたいことを整理し、
               本番の診察や相談の前に気持ちをまとめられます。
-            </p>
-          </div>
+            </CardContent>
+          </Card>
         </div>
         <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg max-h-40 overflow-y-auto text-sm text-gray-600 dark:text-gray-300">
           <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">

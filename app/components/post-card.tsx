@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaEdit, FaEyeSlash, FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa6";
+import { useFetcher } from "react-router";
 import type { PostWithMetadata } from "../repositories/schema";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -11,22 +13,37 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Textarea } from "./ui/textarea";
+import { TimePicker } from "./ui/timepicker";
 
 export default function PostCard({
   post,
   removePost,
   onToggleVisibility,
-  onUpdateMood,
+  onUpdate,
 }: {
   post: PostWithMetadata;
   removePost: () => void;
   onToggleVisibility: (id: string, next: boolean) => void;
-  onUpdateMood?: (id: string, mood: number) => void;
+  onUpdate?: (post: PostWithMetadata) => void;
 }) {
   const [isInvisible, setIsInvisible] = useState(post.isInvisible);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMoodDialogOpen, setIsMoodDialogOpen] = useState(false);
   const [tempMood, setTempMood] = useState(post.mood || 4);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editDate, setEditDate] = useState<Date | null>(
+    post.createdAt ? new Date(post.createdAt) : new Date()
+  );
+  const [editTime, setEditTime] = useState(() => {
+    const d = post.createdAt ? new Date(post.createdAt) : new Date();
+    return d.toTimeString().slice(0, 5); // "HH:mm"
+  });
+  const [editMood, setEditMood] = useState(post.mood || 4);
+  const [isSaving, setIsSaving] = useState(false);
+  const fetcher = useFetcher();
 
   const handleToggleVisibility = () => {
     onToggleVisibility(post.id, !isInvisible);
@@ -42,11 +59,51 @@ export default function PostCard({
   };
 
   const handleMoodSave = () => {
-    if (onUpdateMood) {
-      onUpdateMood(post.id, tempMood);
+    if (onUpdate) {
+      onUpdate({ ...post, mood: tempMood, moodType: "manual" });
     }
     setIsMoodDialogOpen(false);
   };
+
+  // PATCH送信
+  const handleEditSave = async () => {
+    setIsSaving(true);
+    const formData = new FormData();
+    formData.append("postId", post.id);
+    formData.append("content", editContent);
+    let date = editDate ? new Date(editDate) : new Date();
+    if (editTime) {
+      // 時刻を上書き
+      const [h, m] = editTime.split(":").map(Number);
+      date.setHours(h);
+      date.setMinutes(m);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+    }
+    formData.append("createdAt", date.toISOString());
+    formData.append("mood", editMood.toString());
+    await fetcher.submit(formData, {
+      method: "PATCH",
+      action: "/api/posts",
+    });
+    setIsSaving(false);
+    setIsEditDialogOpen(false);
+  };
+
+  // PATCHの返却値で画面を更新
+  useEffect(() => {
+    if (fetcher.data && fetcher.data.updated) {
+      // すでに反映済みなら何もしない
+      if (
+        post.mood === fetcher.data.updated.mood &&
+        post.content === fetcher.data.updated.content &&
+        post.createdAt === fetcher.data.updated.createdAt
+      ) {
+        return;
+      }
+      onUpdate && onUpdate({ ...post, ...fetcher.data.updated });
+    }
+  }, [fetcher.data?.updated, onUpdate, post]);
 
   const getMoodColor = (mood: number) => {
     if (mood <= 2) return "text-red-500 dark:text-red-400";
@@ -66,6 +123,13 @@ export default function PostCard({
             title={isInvisible ? "表示する" : "非表示にする"}
           >
             {isInvisible ? <FaEye /> : <FaEyeSlash />}
+          </button>
+          <button
+            onClick={() => setIsEditDialogOpen(true)}
+            className="p-2 rounded-full border-0 bg-green-100 hover:bg-green-200 dark:bg-green-800 dark:hover:bg-green-700 text-green-600 dark:text-green-300 transition"
+            title="編集"
+          >
+            <FaEdit />
           </button>
           <button
             onClick={() => setIsDialogOpen(true)}
@@ -181,6 +245,110 @@ export default function PostCard({
               className="bg-indigo-400 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600"
             >
               {post.mood ? "保存" : "追加"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 編集ダイアログ */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 dark:text-gray-100">
+              投稿を編集
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                本文
+              </label>
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={4}
+                className="mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                日付・時刻
+              </label>
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                      >
+                        {editDate
+                          ? editDate.toLocaleDateString()
+                          : "日付を選択"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
+                      <Calendar
+                        mode="single"
+                        selected={editDate ?? undefined}
+                        onSelect={setEditDate}
+                        required
+                        initialFocus
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="w-24 flex-shrink-0">
+                  <TimePicker
+                    value={editTime}
+                    onChange={setEditTime}
+                    className="dark:bg-gray-800 dark:text-gray-100 bg-white text-gray-900 border border-gray-300 dark:border-gray-600 rounded px-2 py-1"
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                気分レベル (1-7)
+              </label>
+              <div className="grid grid-cols-7 gap-1 mt-1">
+                {[1, 2, 3, 4, 5, 6, 7].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setEditMood(level)}
+                    className={`h-8 rounded-md border-2 transition ${
+                      editMood === level
+                        ? "border-indigo-500 bg-indigo-500 text-white dark:text-white"
+                        : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                選択中: {editMood}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              className="mr-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+            >
+              キャンセル
+            </Button>
+            <Button
+              type="button"
+              onClick={handleEditSave}
+              disabled={isSaving}
+              className="bg-indigo-400 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white dark:text-white"
+            >
+              {isSaving ? "保存中..." : "保存"}
             </Button>
           </DialogFooter>
         </DialogContent>
