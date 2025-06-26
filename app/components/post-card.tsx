@@ -43,6 +43,7 @@ export default function PostCard({
   });
   const [editMood, setEditMood] = useState(post.mood || 4);
   const [isSaving, setIsSaving] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false); // 追加
   const fetcher = useFetcher();
 
   const handleToggleVisibility = () => {
@@ -166,16 +167,6 @@ export default function PostCard({
                 気分: なし
               </div>
             )}
-            <button
-              onClick={() => {
-                setTempMood(post.mood || 4);
-                setIsMoodDialogOpen(true);
-              }}
-              className="p-2 rounded-full border-0 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-300 transition"
-              title={post.mood ? "気分を編集" : "気分を追加"}
-            >
-              <FaEdit />
-            </button>
           </div>
         </div>
       )}
@@ -276,7 +267,7 @@ export default function PostCard({
               </label>
               <div className="flex gap-2 items-center">
                 <div className="flex-1 min-w-0">
-                  <Popover>
+                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -291,7 +282,10 @@ export default function PostCard({
                       <Calendar
                         mode="single"
                         selected={editDate ?? undefined}
-                        onSelect={setEditDate}
+                        onSelect={(date) => {
+                          setEditDate(date);
+                          setCalendarOpen(false); // 日付選択で閉じる
+                        }}
                         required
                         initialFocus
                         className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
