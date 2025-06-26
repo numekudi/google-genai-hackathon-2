@@ -102,6 +102,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const postId = formData.get("postId");
     const isInvisible = formData.get("isInvisible");
     const moodStr = formData.get("mood");
+    const content = formData.get("content");
+    const createdAt = formData.get("createdAt");
 
     if (typeof postId === "string") {
       const updateData: any = {};
@@ -116,6 +118,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           updateData.mood = mood;
           updateData.moodType = "manual";
         }
+      }
+
+      if (typeof content === "string") {
+        updateData.content = content;
+      }
+
+      if (typeof createdAt === "string" && !isNaN(Date.parse(createdAt))) {
+        updateData.createdAt = new Date(createdAt);
       }
 
       if (Object.keys(updateData).length > 0) {
