@@ -43,6 +43,7 @@ export default function PostCard({
   });
   const [editMood, setEditMood] = useState(post.mood || 4);
   const [isSaving, setIsSaving] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false); // 追加
   const fetcher = useFetcher();
 
   const handleToggleVisibility = () => {
@@ -266,7 +267,7 @@ export default function PostCard({
               </label>
               <div className="flex gap-2 items-center">
                 <div className="flex-1 min-w-0">
-                  <Popover>
+                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -281,7 +282,10 @@ export default function PostCard({
                       <Calendar
                         mode="single"
                         selected={editDate ?? undefined}
-                        onSelect={setEditDate}
+                        onSelect={(date) => {
+                          setEditDate(date);
+                          setCalendarOpen(false); // 日付選択で閉じる
+                        }}
                         required
                         initialFocus
                         className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
