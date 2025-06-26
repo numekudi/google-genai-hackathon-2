@@ -67,7 +67,7 @@ export const getPosts = async (
     .collection("users")
     .doc(uid)
     .collection("posts")
-    .orderBy("timestamp", "desc")
+    .orderBy("createdAt", "desc") // createdAtで降順
     .limit(limit)
     .offset(offset)
     .get();

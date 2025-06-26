@@ -166,16 +166,6 @@ export default function PostCard({
                 気分: なし
               </div>
             )}
-            <button
-              onClick={() => {
-                setTempMood(post.mood || 4);
-                setIsMoodDialogOpen(true);
-              }}
-              className="p-2 rounded-full border-0 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-600 dark:text-blue-300 transition"
-              title={post.mood ? "気分を編集" : "気分を追加"}
-            >
-              <FaEdit />
-            </button>
           </div>
         </div>
       )}
